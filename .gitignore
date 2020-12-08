@@ -1,0 +1,8 @@
+# Rust stuff
+target/
+debug/
+Cargo.lock
+**/*rs.bk
+
+# ebb stuff
+.ebb-conf.json
