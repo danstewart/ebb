@@ -1,2 +1,2 @@
 pub mod conf;
-pub mod input;
+pub mod prompt;
