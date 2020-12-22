@@ -7,12 +7,14 @@ use serde::{Serialize, Deserialize};
 use std::path;
 use std::fs;
 
-#[derive(Serialize, Deserialize)]
+/// The supported storage backends
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Backend {
 	S3,
 	DigitalOcean,
 }
 
+/// FromStr mapping for Backend enum
 impl std::str::FromStr for Backend {
 	type Err = String;
 
@@ -25,12 +27,14 @@ impl std::str::FromStr for Backend {
 	}
 }
 
-#[derive(Serialize, Deserialize)]
+/// Config struct
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
 	pub blog_name: String,
-	pub backend: Backend
+	pub backend: Backend,
 }
 
+/// Return true if config file exists
 pub fn exists() -> bool {
 	return config_file().exists();
 }
@@ -48,6 +52,27 @@ pub fn write(config: &Config) -> Result<()> {
 	Ok(())
 }
 
+/// Reads the config file and returns the Config struct
+/// Returns None if config is empty, invalid JSON or does not exist
+pub fn read() -> Option<Config> {
+	let config_file = config_file();
+
+	// If file doesn't exist then return None
+	if !exists() {
+		return None;
+	}
+
+	// If we have a config and we can read and parse it, return it
+	if let Ok(contents) = std::fs::read_to_string(config_file) {
+		if let Ok(json) = serde_json::from_str(&contents) {
+			return Some(json);
+		}
+	}
+
+	// Otherwise return none
+	return None;
+}
+
 /// Returns the config file path
 /// Panics if unable to detect config home dir
 fn config_file() -> path::PathBuf {
@@ -60,7 +85,3 @@ fn config_file() -> path::PathBuf {
 	panic!("Unable to determine config file path");
 }
 
-
-// pub fn read() -> Result<HashMap<&str, String>> {
-
-// }

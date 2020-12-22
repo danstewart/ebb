@@ -12,6 +12,10 @@ fn main() {
 					.about("The easy blog builder")
 					.subcommand(App::new("init")
 						.about("Initialises a new blog")
+						.arg(Arg::new("force")
+							.long("force")
+							.about("Forces overwriting existing config")
+						)
 					)
 					.subcommand(App::new("new")
 						.about("Creates a new blog post")
@@ -31,9 +35,9 @@ fn main() {
 // Dispatch our args to the appropriate action
 fn dispatch(opts: clap::ArgMatches) -> Result<()> {
 	match opts.subcommand() {
-		Some(("init", _))   => init::init(),
-		Some(("add", args)) => add::add(args),
-		None                => Err(anyhow!("A subcommand is required")),
-		_                   => Err(anyhow!("Invalid subcommand")),
+		Some(("init", args)) => init::init(args),
+		Some(("add", args))  => add::add(args),
+		None => Err(anyhow!("A subcommand is required")),
+		_    => Err(anyhow!("Invalid subcommand")),
 	}
 }

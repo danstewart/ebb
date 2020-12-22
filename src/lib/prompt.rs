@@ -31,12 +31,6 @@ fn chomp(s: &mut String) -> String {
 	return chomped;
 }
 
-// An instance based approach to the above methods for fancier use cases
-#[allow(dead_code)]
-pub struct Prompt {
-	default: Option<String>
-}
-
 /// Writes `question` to stdout and returns the user response from `stdout`
 pub fn ask(question: &str) -> Result<String, PromptError> {
 	print!("{}", question);
@@ -84,6 +78,13 @@ pub fn validate<F, T>(question: &str, func: F) -> Result<T, PromptError> where F
 		None => Err(PromptError::InconcievableError())
 	}
 }
+
+// An instance based approach to the above methods for fancier use cases
+#[allow(dead_code)]
+pub struct Prompt {
+	default: Option<String>
+}
+
 
 #[allow(dead_code)]
 impl Prompt {

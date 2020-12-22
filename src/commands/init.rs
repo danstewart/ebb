@@ -6,9 +6,12 @@ use crate::lib::prompt::PromptError::ValidateError;
 use std::str::FromStr;
 
 // Initial setup and configuration
-pub fn init() -> Result<()> {
-	if conf::exists() {
-		return Ok(());
+pub fn init(args: &clap::ArgMatches) -> Result<()> {
+	if let Some(_) = conf::read() {
+		if args.occurrences_of("force") == 0 {
+			println!("Config already exists, pass --force to overwrite existing config");
+			return Ok(());
+		}
 	}
 
 	println!("ebb initialisation");
@@ -22,11 +25,7 @@ pub fn init() -> Result<()> {
 		}
 	})?;
 
-	let config = conf::Config {
-		blog_name:  blog_name,
-		backend: backend,
-	};
-
+	let config = conf::Config { blog_name, backend };
 	conf::write(&config)?;
 	Ok(())
 }
