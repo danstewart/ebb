@@ -28,49 +28,20 @@ impl std::str::FromStr for Backend {
 }
 
 /// Config struct
+// TODO: Should these be options or should they just have empty defaults??
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-	pub blog_name: String,
-	pub backend: Backend,
+	pub blog_name: Option<String>,
+	pub backend: Option<Backend>,
 }
 
-/// Return true if config file exists
-pub fn exists() -> bool {
-	return config_file().exists();
-}
-
-/// Write the config HashMap as json to disk
-pub fn write(config: &Config) -> Result<()> {
-	let config_file = config_file();
-
-	// We can safely unwrap this as config_file always returns a file
-	fs::create_dir_all(config_file.parent().unwrap())?;
-	let mut file = File::create(config_file)?;
-
-	let json = serde_json::to_string(&config)?;
-	file.write_all(json.as_bytes())?;
-	Ok(())
-}
-
-/// Reads the config file and returns the Config struct
-/// Returns None if config is empty, invalid JSON or does not exist
-pub fn read() -> Option<Config> {
-	let config_file = config_file();
-
-	// If file doesn't exist then return None
-	if !exists() {
-		return None;
-	}
-
-	// If we have a config and we can read and parse it, return it
-	if let Ok(contents) = std::fs::read_to_string(config_file) {
-		if let Ok(json) = serde_json::from_str(&contents) {
-			return Some(json);
+impl Default for Config {
+	fn default() -> Config {
+		Config { 
+			blog_name: None,
+			backend: None,
 		}
 	}
-
-	// Otherwise return none
-	return None;
 }
 
 /// Returns the config file path
@@ -85,3 +56,57 @@ fn config_file() -> path::PathBuf {
 	panic!("Unable to determine config file path");
 }
 
+/// Return true if config file exists
+fn exists() -> bool {
+	return config_file().exists();
+}
+
+/// Instance of config
+impl Config {
+	/// Create new config instance
+	pub fn new(blog_name: String, backend: Backend) -> Self {
+		return Config {
+			blog_name: Some(blog_name),
+			backend: Some(backend),
+		};
+	}
+
+	/// Return an empty config instance that can be populated later
+	pub fn empty() -> Self {
+		return Config::default();
+	}
+
+	/// Reads the config file and returns the Config struct
+	/// Returns None if config is empty, invalid JSON or does not exist
+	pub fn read() -> Option<Self> {
+		let config_file = config_file();
+
+		// If file doesn't exist then return None
+		if !exists() {
+			return None;
+		}
+
+		// If we have a config and we can read and parse it, return it
+		if let Ok(contents) = std::fs::read_to_string(config_file) {
+			if let Ok(json) = serde_json::from_str(&contents) {
+				return Some(json);
+			}
+		}
+
+		// Otherwise return none
+		return None;
+	}
+
+	/// Write the config HashMap as json to disk
+	pub fn write(self) -> Result<()> {
+		let config_file = config_file();
+
+		// We can safely unwrap this as config_file always returns a file
+		fs::create_dir_all(config_file.parent().unwrap())?;
+		let mut file = File::create(config_file)?;
+
+		let json = serde_json::to_string(&self)?;
+		file.write_all(json.as_bytes())?;
+		Ok(())
+	}
+}
