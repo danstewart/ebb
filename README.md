@@ -51,8 +51,8 @@ ebb
 
 ---
 
-## Extensions
+## Extendable
 
 ebb has been designed to extend pretty much every element.  
-Want to use Digital Ocean spaces? Sure, just add it to `/src/backends/` and run `ebb config backend=dospaces`.  
-What about using LaTeX instead of MD? Yepp, just add the logic to `/src/formatters/` and run `ebb config format=latex`.  
+Want to use Digital Ocean spaces as your backend? Sure, just add it to `/src/backends/` and run `ebb config backend=dospaces`.  
+What about using LaTeX instead of MarkDown? Yepp, just add the logic to `/src/formatters/` and run `ebb config format=latex`.  

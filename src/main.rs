@@ -1,7 +1,7 @@
 mod lib;
 mod commands;
 
-use commands::{init, new};
+use commands::{init, add};
 use clap::{App, Arg};
 use anyhow::{anyhow, Result};
 
@@ -32,7 +32,7 @@ fn main() {
 fn dispatch(opts: clap::ArgMatches) -> Result<()> {
 	match opts.subcommand() {
 		Some(("init", _))   => init::init(),
-		Some(("new", args)) => new::new(args),
+		Some(("add", args)) => add::add(args),
 		None                => Err(anyhow!("A subcommand is required")),
 		_                   => Err(anyhow!("Invalid subcommand")),
 	}

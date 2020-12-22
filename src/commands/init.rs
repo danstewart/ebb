@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 // Initial setup and configuration
 pub fn init() -> Result<()> {
-	if conf::exists().unwrap() {
+	if conf::exists() {
 		return Ok(());
 	}
 
