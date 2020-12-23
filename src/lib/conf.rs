@@ -1,11 +1,10 @@
 use anyhow::Result;
 use std::fs::File;
 use std::io::prelude::*;
-use dirs::config_dir;
 use serde_json;
 use serde::{Serialize, Deserialize};
-use std::path;
 use std::fs;
+use crate::lib::io;
 
 /// The supported storage backends
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,6 +32,7 @@ impl std::str::FromStr for Backend {
 pub struct Config {
 	pub blog_name: Option<String>,
 	pub backend: Option<Backend>,
+	pub editor: Option<String>,
 }
 
 impl Default for Config {
@@ -40,46 +40,31 @@ impl Default for Config {
 		Config { 
 			blog_name: None,
 			backend: None,
+			editor: None,
 		}
 	}
 }
 
-/// Returns the config file path
-/// Panics if unable to detect config home dir
-fn config_file() -> path::PathBuf {
-	if let Some(mut config_home) = config_dir() {
-		config_home.push("ebb");
-		config_home.push("config.json");
-		return config_home;
-	}
-
-	panic!("Unable to determine config file path");
-}
-
 /// Return true if config file exists
 fn exists() -> bool {
-	return config_file().exists();
+	return io::config_file().exists();
 }
 
 /// Instance of config
 impl Config {
 	/// Create new config instance
-	pub fn new(blog_name: String, backend: Backend) -> Self {
+	pub fn new(blog_name: String, backend: Backend, editor: String) -> Self {
 		return Config {
 			blog_name: Some(blog_name),
 			backend: Some(backend),
+			editor: Some(editor),
 		};
-	}
-
-	/// Return an empty config instance that can be populated later
-	pub fn empty() -> Self {
-		return Config::default();
 	}
 
 	/// Reads the config file and returns the Config struct
 	/// Returns None if config is empty, invalid JSON or does not exist
 	pub fn read() -> Option<Self> {
-		let config_file = config_file();
+		let config_file = io::config_file();
 
 		// If file doesn't exist then return None
 		if !exists() {
@@ -99,7 +84,7 @@ impl Config {
 
 	/// Write the config HashMap as json to disk
 	pub fn write(self) -> Result<()> {
-		let config_file = config_file();
+		let config_file = io::config_file();
 
 		// We can safely unwrap this as config_file always returns a file
 		fs::create_dir_all(config_file.parent().unwrap())?;
