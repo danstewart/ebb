@@ -28,7 +28,7 @@ fn main() {
 		.get_matches();
 
 	if let Err(e) = dispatch(opts) {
-		eprintln!("{}\nPass --help for more info", e);
+		eprintln!("{:?}\n\nPass --help for more info", e);
 	}
 }
 

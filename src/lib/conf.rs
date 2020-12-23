@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, Context};
 use std::fs::File;
 use std::io::prelude::*;
 use serde_json;
@@ -30,19 +30,9 @@ impl std::str::FromStr for Backend {
 // TODO: Should these be options or should they just have empty defaults??
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-	pub blog_name: Option<String>,
-	pub backend: Option<Backend>,
-	pub editor: Option<String>,
-}
-
-impl Default for Config {
-	fn default() -> Config {
-		Config { 
-			blog_name: None,
-			backend: None,
-			editor: None,
-		}
-	}
+	pub blog_name: String,
+	pub backend: Backend,
+	pub editor: String,
 }
 
 /// Return true if config file exists
@@ -55,9 +45,9 @@ impl Config {
 	/// Create new config instance
 	pub fn new(blog_name: String, backend: Backend, editor: String) -> Self {
 		return Config {
-			blog_name: Some(blog_name),
-			backend: Some(backend),
-			editor: Some(editor),
+			blog_name: blog_name,
+			backend: backend,
+			editor: editor,
 		};
 	}
 
@@ -83,15 +73,18 @@ impl Config {
 	}
 
 	/// Write the config HashMap as json to disk
-	pub fn write(self) -> Result<()> {
+	pub fn write(&self) -> Result<()> {
 		let config_file = io::config_file();
 
 		// We can safely unwrap this as config_file always returns a file
 		fs::create_dir_all(config_file.parent().unwrap())?;
-		let mut file = File::create(config_file)?;
+		let mut file = File::create(&config_file)?;
 
-		let json = serde_json::to_string(&self)?;
-		file.write_all(json.as_bytes())?;
+		let json = serde_json::to_string(&self)
+			.with_context(|| "Failed to serialize config struct")?;
+
+		file.write_all(json.as_bytes())
+			.with_context(|| format!("Failed to write config file to {}", config_file.display()))?;
 		Ok(())
 	}
 }

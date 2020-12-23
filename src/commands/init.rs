@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, Context};
 use crate::lib::io;
 use crate::lib::conf::{Config, Backend};
 use crate::lib::prompt;
@@ -10,22 +10,26 @@ pub fn init(args: &clap::ArgMatches) -> Result<()> {
 	println!("ebb initialisation");
 	println!("==================");
 
-	make_config(args.is_present("force"))?;
+	let config = make_config(args.is_present("force"))?;
 	make_wrapper()?;
 
-	// TODO: Open their editor to edit the wrapper
-	// std::process::Command::new("code").spawn()?.wait()?;
+	// Open their selected editor to edit the wrapper
+	std::process::Command::new(&config.editor)
+		.args(&[io::wrapper_file()])
+		.spawn()
+		.with_context(|| format!("Failed to run '{} {}'", &config.editor, io::wrapper_file().display()))?
+		.wait()?;
 
 	Ok(())
 }
 
 /// Ask user for input and store in config
-fn make_config(force: bool) -> Result<()> {
+fn make_config(force: bool) -> Result<Config> {
 	// If we have a valid config and haven't passed --force - bail
-	if let Some(_) = Config::read() {
+	if let Some(config) = Config::read() {
 		if !force {
 			println!("Config already exists, pass --force to overwrite existing config");
-			return Ok(());
+			return Ok(config);
 		}
 	}
 
@@ -43,8 +47,8 @@ fn make_config(force: bool) -> Result<()> {
 	let editor = prompt::ask("What is the command for your preferred editor? ")?;
 
 	let config = Config::new(blog_name, backend, editor);
-	config.write()?;
-	Ok(())
+	&config.write()?;
+	Ok(config)
 }
 
 /// Copies the wrapper.html into the app data dir
