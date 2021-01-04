@@ -38,7 +38,7 @@ pub fn make_wrapper() -> Result<()> {
 	std::fs::create_dir_all(&data_dir)?;
 
 	let bytes = include_bytes!("../templates/wrapper.html"); // Annoyingly this must be a raw str
-	let mut wrapper_file = data_dir.clone();
+	let mut wrapper_file = data_dir;
 	wrapper_file.push(WRAPPER_FILE);
 
 	let mut file = std::fs::File::create(&wrapper_file)?;

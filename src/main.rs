@@ -1,5 +1,8 @@
+#![warn(clippy::all)]
+
 mod lib;
 mod commands;
+mod backends;
 
 use commands::{init, add};
 use clap::{App, Arg};

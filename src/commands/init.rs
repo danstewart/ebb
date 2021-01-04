@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Result, Context, anyhow};
 use crate::lib::io;
 use crate::lib::conf::{Config, Backend};
 use crate::lib::prompt;
@@ -24,13 +24,12 @@ pub fn init(args: &clap::ArgMatches) -> Result<()> {
 }
 
 /// Ask user for input and store in config
+/// Returns Err() if config exists
 fn make_config(force: bool) -> Result<Config> {
-	// If we have a valid config and haven't passed --force - bail
-	if let Some(config) = Config::read() {
-		if !force {
-			println!("Config already exists, pass --force to overwrite existing config");
-			return Ok(config);
-		}
+	// If we have a valid config and haven't passed --force then bail
+	if Config::read().is_some() && !force {
+		let error = anyhow!("Config already exists, use `ebb init --force` to overwrite existing config or use `ebb edit wrapper` to edit the wrapper.html");
+		return Err(error);
 	}
 
 	// Ask user for the details we need
@@ -47,7 +46,7 @@ fn make_config(force: bool) -> Result<Config> {
 	let editor = prompt::ask("What is the command for your preferred editor? ")?;
 
 	let config = Config::new(blog_name, backend, editor);
-	&config.write()?;
+	config.write()?;
 	Ok(config)
 }
 

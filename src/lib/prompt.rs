@@ -28,7 +28,7 @@ fn chomp(s: &mut String) -> String {
 		chomped += "\r";
 	}
 
-	return chomped;
+	chomped
 }
 
 /// Writes `question` to stdout and returns the user response from `stdout`

@@ -1,7 +1,6 @@
 use anyhow::{Result, Context};
 use std::fs::File;
 use std::io::prelude::*;
-use serde_json;
 use serde::{Serialize, Deserialize};
 use std::fs;
 use crate::lib::io;
@@ -37,18 +36,18 @@ pub struct Config {
 
 /// Return true if config file exists
 fn exists() -> bool {
-	return io::config_file().exists();
+	io::config_file().exists()
 }
 
 /// Instance of config
 impl Config {
 	/// Create new config instance
 	pub fn new(blog_name: String, backend: Backend, editor: String) -> Self {
-		return Config {
-			blog_name: blog_name,
-			backend: backend,
-			editor: editor,
-		};
+		Config {
+			blog_name,
+			backend,
+			editor,
+		}
 	}
 
 	/// Reads the config file and returns the Config struct
@@ -69,7 +68,7 @@ impl Config {
 		}
 
 		// Otherwise return none
-		return None;
+		None
 	}
 
 	/// Write the config HashMap as json to disk
