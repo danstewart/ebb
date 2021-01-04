@@ -1,8 +1,8 @@
+use anyhow::{Context, Result};
+use std::io::prelude::*;
 /// General IO
 /// Creating templates, working out dirs, etc...
 use std::path;
-use anyhow::{Result, Context};
-use std::io::prelude::*;
 
 // File names
 const WRAPPER_FILE: &str = "wrapper.html";

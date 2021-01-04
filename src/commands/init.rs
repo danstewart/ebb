@@ -1,8 +1,8 @@
-use anyhow::{Result, Context, anyhow};
+use crate::lib::conf::{Backend, Config};
 use crate::lib::io;
-use crate::lib::conf::{Config, Backend};
 use crate::lib::prompt;
 use crate::lib::prompt::PromptError::ValidateError;
+use anyhow::{anyhow, Context, Result};
 use std::str::FromStr;
 
 // Initial setup and configuration
@@ -17,7 +17,13 @@ pub fn init(args: &clap::ArgMatches) -> Result<()> {
 	std::process::Command::new(&config.editor)
 		.args(&[io::wrapper_file()])
 		.spawn()
-		.with_context(|| format!("Failed to run '{} {}'", &config.editor, io::wrapper_file().display()))?
+		.with_context(|| {
+			format!(
+				"Failed to run '{} {}'",
+				&config.editor,
+				io::wrapper_file().display()
+			)
+		})?
 		.wait()?;
 
 	Ok(())
@@ -35,12 +41,13 @@ fn make_config(force: bool) -> Result<Config> {
 	// Ask user for the details we need
 	let blog_name = prompt::ask("What is the name of your blog? ")?;
 
-	let backend: Backend = prompt::validate("Which backend would you like to use? [s3/do] ", |ans: String| {
-		match Backend::from_str(&ans.to_uppercase()[..]) {
+	let backend: Backend = prompt::validate(
+		"Which backend would you like to use? [s3/do] ",
+		|ans: String| match Backend::from_str(&ans.to_uppercase()[..]) {
 			Ok(val) => Ok(val),
-			Err(_)  => Err(ValidateError(String::from("Must be either S3 or DO")))
-		}
-	})?;
+			Err(_) => Err(ValidateError(String::from("Must be either S3 or DO"))),
+		},
+	)?;
 
 	// TODO: Check $EDITOR env var
 	let editor = prompt::ask("What is the command for your preferred editor? ")?;

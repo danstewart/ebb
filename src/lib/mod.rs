@@ -1,3 +1,3 @@
 pub mod conf;
-pub mod prompt;
 pub mod io;
+pub mod prompt;

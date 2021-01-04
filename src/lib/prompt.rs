@@ -57,7 +57,10 @@ let long_ans = prompt::validate("Hey, how is it going? ", |input: String| {
 	Err(ValidateError(String::from("Must be longer than 3 chars")))
 });
 */
-pub fn validate<F, T>(question: &str, func: F) -> Result<T, PromptError> where F: Fn(String) -> Result<T, PromptError> {
+pub fn validate<F, T>(question: &str, func: F) -> Result<T, PromptError>
+where
+	F: Fn(String) -> Result<T, PromptError>,
+{
 	let mut answer: Option<T> = None;
 	let mut success = false;
 
@@ -65,26 +68,25 @@ pub fn validate<F, T>(question: &str, func: F) -> Result<T, PromptError> where F
 		let res = ask(question)?;
 		match func(res) {
 			Ok(val) => {
-				answer  = Some(val);
+				answer = Some(val);
 				success = true;
-			},
+			}
 			Err(e) => println!("{}", e),
 		}
 	}
 
-	match answer{
+	match answer {
 		Some(answer) => Ok(answer),
 		// This should never be hit...
-		None => Err(PromptError::InconcievableError())
+		None => Err(PromptError::InconcievableError()),
 	}
 }
 
 // An instance based approach to the above methods for fancier use cases
 #[allow(dead_code)]
 pub struct Prompt {
-	default: Option<String>
+	default: Option<String>,
 }
-
 
 #[allow(dead_code)]
 impl Prompt {
@@ -92,8 +94,10 @@ impl Prompt {
 		Prompt { default: None }
 	}
 
-	pub	fn default(default_value: String) -> Prompt {
-		Prompt { default: Some(default_value) }
+	pub fn default(default_value: String) -> Prompt {
+		Prompt {
+			default: Some(default_value),
+		}
 	}
 
 	/// Processes the provided question to account for the instances `default` value
@@ -116,8 +120,10 @@ impl Prompt {
 
 	/// Writes `question` to stdout and returns the user response from `stdout`
 	/// if the response returns `Ok()` from `func`
-	pub fn validate<F, T>(&self, question: &str, func: F) -> Result<T, PromptError> where F: Fn(String) -> Result<T, PromptError> {
+	pub fn validate<F, T>(&self, question: &str, func: F) -> Result<T, PromptError>
+	where
+		F: Fn(String) -> Result<T, PromptError>,
+	{
 		validate(&self.question(question), func)
 	}
 }
-

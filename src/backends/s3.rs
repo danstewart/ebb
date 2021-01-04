@@ -1,8 +1,6 @@
 use super::shared::Backend;
 
-struct S3 {
-
-}
+struct S3 {}
 
 impl Backend for S3 {
 	fn init(&self) {}

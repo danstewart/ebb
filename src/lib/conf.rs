@@ -1,9 +1,9 @@
-use anyhow::{Result, Context};
+use crate::lib::io;
+use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use serde::{Serialize, Deserialize};
-use std::fs;
-use crate::lib::io;
 
 /// The supported storage backends
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,11 +17,11 @@ impl std::str::FromStr for Backend {
 	type Err = String;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
-			match s {
-				"S3" => Ok(Backend::S3),
-				"DO" => Ok(Backend::DigitalOcean),
-				_ => Err(format!("'{}' is not a valid backend", s))
-			}
+		match s {
+			"S3" => Ok(Backend::S3),
+			"DO" => Ok(Backend::DigitalOcean),
+			_ => Err(format!("'{}' is not a valid backend", s)),
+		}
 	}
 }
 
@@ -79,8 +79,8 @@ impl Config {
 		fs::create_dir_all(config_file.parent().unwrap())?;
 		let mut file = File::create(&config_file)?;
 
-		let json = serde_json::to_string(&self)
-			.with_context(|| "Failed to serialize config struct")?;
+		let json =
+			serde_json::to_string(&self).with_context(|| "Failed to serialize config struct")?;
 
 		file.write_all(json.as_bytes())
 			.with_context(|| format!("Failed to write config file to {}", config_file.display()))?;
