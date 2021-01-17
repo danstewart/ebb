@@ -7,8 +7,10 @@ mod lib;
 use anyhow::{anyhow, Result};
 use clap::{App, Arg};
 use commands::{add, init};
+use tokio;
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	let opts = App::new("ebb")
 		.version("0.01")
 		.author("Dan Stewart <danielandrewstewart@gmail.com>")
@@ -30,15 +32,15 @@ fn main() {
 		)
 		.get_matches();
 
-	if let Err(e) = dispatch(opts) {
+	if let Err(e) = dispatch(opts).await {
 		eprintln!("{:?}\n\nPass --help for more info", e);
 	}
 }
 
 // Dispatch our args to the appropriate action
-fn dispatch(opts: clap::ArgMatches) -> Result<()> {
+async fn dispatch(opts: clap::ArgMatches) -> Result<()> {
 	match opts.subcommand() {
-		Some(("init", args)) => init::init(args),
+		Some(("init", args)) => init::init(args).await,
 		Some(("add", args)) => add::add(args),
 		None => Err(anyhow!("A subcommand is required")),
 		_ => Err(anyhow!("Invalid subcommand")),

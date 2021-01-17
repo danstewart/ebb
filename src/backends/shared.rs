@@ -1,9 +1,14 @@
+use anyhow::Result;
 /// Shared backend logic (traits)
+use async_trait::async_trait;
 
+#[async_trait]
 pub trait Backend {
+	fn new() -> Self;
+
 	/// Initialise new backend
 	/// Gather keys etc...
-	fn init(&self);
+	fn init(&self) -> Result<()>;
 
 	/// Publish blog posts
 	fn publish(&self);

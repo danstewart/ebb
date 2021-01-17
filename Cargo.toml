@@ -13,3 +13,8 @@ serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0"
 thiserror = "1.0"
 dirs = "3.0.1"
+rusoto_core = "0.46.0"
+rusoto_s3 = "0.46.0"
+rusoto_credential = "0.46.0"
+async-trait = "0.1.42"
+tokio = "1.0.2"
