@@ -5,7 +5,7 @@ use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::prompt;
 use crate::lib::prompt::PromptError::ValidateError;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use std::str::FromStr;
 
 // Initial setup and configuration
@@ -30,7 +30,7 @@ pub async fn init(args: &clap::ArgMatches) -> Result<()> {
 		.wait()?;
 
 	let s3 = S3::new();
-	s3.init()?;
+	println!("Backend init ok? {}", s3.init().await.is_ok());
 	Ok(())
 }
 

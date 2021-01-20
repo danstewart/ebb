@@ -8,7 +8,7 @@ pub trait Backend {
 
 	/// Initialise new backend
 	/// Gather keys etc...
-	fn init(&self) -> Result<()>;
+	async fn init(&self) -> Result<()>;
 
 	/// Publish blog posts
 	fn publish(&self);
