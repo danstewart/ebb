@@ -5,7 +5,7 @@ use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::prompt;
 use crate::lib::prompt::PromptError::ValidateError;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Result, Context};
 use std::str::FromStr;
 
 // Initial setup and configuration

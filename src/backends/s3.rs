@@ -23,7 +23,11 @@ enum Provider {
 #[async_trait]
 impl ProvideAwsCredentials for Provider {
 	async fn credentials(&self) -> Result<AwsCredentials, CredentialsError> {
-		return self.credentials().await;
+		// Call credentials() on the underlying type
+		match self {
+			Provider::Environment(p) => return p.credentials().await,
+			Provider::Profile(p) => return p.credentials().await,
+		}
 	}
 }
 
@@ -47,12 +51,7 @@ impl S3 {
 		// TODO: Prompt user to confirm region is correct
 		let region = rusoto_core::Region::default();
 		let http = rusoto_core::HttpClient::new()?;
-
-		// NOTE: Seems redundant but without this we get a core dump when calling list_buckets
-		match provider {
-			Provider::Environment(p) => Ok(S3Client::new_with(http, p, region)),
-			Provider::Profile(p) => Ok(S3Client::new_with(http, p, region)),
-		}
+		Ok(S3Client::new_with(http, provider, region))
 	}
 
 	// NOTE: Can't get this working but hopefully will
