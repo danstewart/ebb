@@ -40,26 +40,30 @@ pub fn make_wrapper() -> Result<()> {
 	std::fs::create_dir_all(&data_dir)?;
 
 	let config = Config::global();
+
+	// Values to replace into the wrapper.html
 	let mut replacers = HashMap::new();
 	replacers.insert("author", &config.author);
 	replacers.insert("title", &config.blog_name);
 
-	// TODO: Tidy this up
+	// Read our template
 	let bytes = include_bytes!("../templates/wrapper.html"); // Annoyingly this must be a raw str
-	let wrapper = std::str::from_utf8(bytes)?;
-	let mut content = String::from(wrapper);
+	let mut wrapper = String::from_utf8(bytes.to_vec())?;
+
+	// Replace our vars
 	for (key, val) in &replacers {
 		let mut tag = String::from("{{ ");
 		tag.push_str(key);
 		tag.push_str(" }}");
-		content = content.replace(&tag, val);
+		wrapper = wrapper.replace(&tag, val);
 	}
 
+	// Write formatted template to disk
 	let mut wrapper_file = data_dir;
 	wrapper_file.push(WRAPPER_FILE);
 
 	let mut file = std::fs::File::create(&wrapper_file)?;
-	file.write_all(content.as_bytes())
+	file.write_all(wrapper.as_bytes())
 		.with_context(|| format!("Failed to write wrapper.html to {}", wrapper_file.display()))?;
 
 	Ok(())
