@@ -5,7 +5,7 @@ use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::prompt;
 use crate::lib::prompt::PromptError::ValidateError;
-use anyhow::{anyhow, Result, Context};
+use anyhow::{anyhow, Context, Result};
 use std::str::FromStr;
 
 // Initial setup and configuration
@@ -36,14 +36,15 @@ pub async fn init(args: &clap::ArgMatches) -> Result<()> {
 
 /// Ask user for input and store in config
 /// Returns Err() if config exists
-fn make_config(force: bool) -> Result<Config> {
+fn make_config(force: bool) -> Result<&'static Config> {
 	// If we have a valid config and haven't passed --force then bail
-	if Config::read().is_some() && !force {
+	if !force && Config::read().is_some() {
 		let error = anyhow!("Config already exists, use `ebb init --force` to overwrite existing config or use `ebb edit wrapper` to edit the wrapper.html");
 		return Err(error);
 	}
 
 	// Ask user for the details we need
+	let author = prompt::ask("What is your name? ")?;
 	let blog_name = prompt::ask("What is the name of your blog? ")?;
 
 	let backend: conf::Backend = prompt::validate(
@@ -57,7 +58,7 @@ fn make_config(force: bool) -> Result<Config> {
 	// TODO: Check $EDITOR env var
 	let editor = prompt::ask("What is the command for your preferred editor? ")?;
 
-	let config = Config::new(blog_name, backend, editor);
+	let config = Config::new(author, blog_name, backend, editor);
 	config.write()?;
 	Ok(config)
 }

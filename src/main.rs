@@ -7,10 +7,21 @@ mod lib;
 use anyhow::{anyhow, Result};
 use clap::{App, Arg};
 use commands::{add, init};
+use lib::conf::Config;
+use once_cell::sync::OnceCell;
 use tokio;
+
+// Global read only config singleton
+// Accesible via Config::global()
+// Will be empty until Config is instantiated for the first time
+static CONFIG: OnceCell<Config> = OnceCell::new();
 
 #[tokio::main]
 async fn main() {
+	// // Create our config instance
+	// let config = Config::read_or_empty();
+	// CONFIG.set(config).unwrap();
+
 	let opts = App::new("ebb")
 		.version("0.01")
 		.author("Dan Stewart <danielandrewstewart@gmail.com>")
@@ -23,7 +34,7 @@ async fn main() {
 			),
 		)
 		.subcommand(
-			App::new("new").about("Creates a new blog post").arg(
+			App::new("add").about("Creates a new blog post").arg(
 				Arg::new("file")
 					.index(1)
 					.required(true)

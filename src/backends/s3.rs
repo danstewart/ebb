@@ -78,6 +78,7 @@ impl Backend for S3 {
 		let provider = self.get_cred_provider()?;
 		let client = self.get_client(provider)?;
 
+		// List buckets just to confirm credentials work
 		let resp = client.list_buckets().await;
 
 		if resp.is_ok() {

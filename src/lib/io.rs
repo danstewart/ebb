@@ -1,4 +1,6 @@
+use crate::lib::conf::Config;
 use anyhow::{Context, Result};
+use std::collections::HashMap;
 use std::io::prelude::*;
 /// General IO
 /// Creating templates, working out dirs, etc...
@@ -37,12 +39,27 @@ pub fn make_wrapper() -> Result<()> {
 	let data_dir = data_dir();
 	std::fs::create_dir_all(&data_dir)?;
 
+	let config = Config::global();
+	let mut replacers = HashMap::new();
+	replacers.insert("author", &config.author);
+	replacers.insert("title", &config.blog_name);
+
+	// TODO: Tidy this up
 	let bytes = include_bytes!("../templates/wrapper.html"); // Annoyingly this must be a raw str
+	let wrapper = std::str::from_utf8(bytes)?;
+	let mut content = String::from(wrapper);
+	for (key, val) in &replacers {
+		let mut tag = String::from("{{ ");
+		tag.push_str(key);
+		tag.push_str(" }}");
+		content = content.replace(&tag, val);
+	}
+
 	let mut wrapper_file = data_dir;
 	wrapper_file.push(WRAPPER_FILE);
 
 	let mut file = std::fs::File::create(&wrapper_file)?;
-	file.write_all(bytes)
+	file.write_all(content.as_bytes())
 		.with_context(|| format!("Failed to write wrapper.html to {}", wrapper_file.display()))?;
 
 	Ok(())
