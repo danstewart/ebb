@@ -36,7 +36,7 @@ pub async fn init(args: &clap::ArgMatches) -> Result<()> {
 
 /// Ask user for input and store in config
 /// Returns Err() if config exists
-fn make_config(force: bool) -> Result<&'static Config> {
+fn make_config(force: bool) -> Result<Config> {
 	// If we have a valid config and haven't passed --force then bail
 	if !force && Config::read().is_some() {
 		let error = anyhow!("Config already exists, use `ebb init --force` to overwrite existing config or use `ebb edit wrapper` to edit the wrapper.html");

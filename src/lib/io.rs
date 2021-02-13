@@ -1,5 +1,5 @@
 use crate::lib::conf::Config;
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use std::collections::HashMap;
 use std::io::prelude::*;
 /// General IO
@@ -39,7 +39,8 @@ pub fn make_wrapper() -> Result<()> {
 	let data_dir = data_dir();
 	std::fs::create_dir_all(&data_dir)?;
 
-	let config = Config::global();
+	// Load the config
+	let config = Config::read().ok_or(anyhow!("No config found when building wrapper file"))?;
 
 	// Values to replace into the wrapper.html
 	let mut replacers = HashMap::new();

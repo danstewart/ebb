@@ -5,11 +5,10 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 
-// NOTE: This is a little clunky but seems to do the trick
-// We can only have one instance of Config at a time (via once_cell)
-// New instances can be created from Config::new() or Config::read()
-// Attempting to create a new instance when one already exists will panic
-// Accessing the config should be done via Config::global()
+// NOTE: This used to be a singleton using the OnceCell lib
+// It turned out to be overly clunky but noting here in case
+// it's needed at some point.
+// New strategy is to just re-read the config each time.
 
 /// The supported storage backends
 #[derive(Debug, Serialize, Deserialize)]
@@ -48,41 +47,18 @@ fn exists() -> bool {
 /// Instance of config
 impl Config {
 	/// Create new config instance
-	pub fn new(
-		author: String,
-		blog_name: String,
-		backend: Backend,
-		editor: String,
-	) -> &'static Self {
-		let instance = Config {
+	pub fn new(author: String, blog_name: String, backend: Backend, editor: String) -> Self {
+		Config {
 			author,
 			blog_name,
 			backend,
 			editor,
-		};
-
-		instance.set_global().unwrap()
-	}
-
-	/// Gets the global Config singleton
-	pub fn global() -> &'static Config {
-		crate::CONFIG.get().expect("Error loading config")
-	}
-
-	/// Updates the global Config singleton and returns a read only reference
-	fn set_global(self) -> Result<&'static Self> {
-		// Cannot overwrite existing once_cell
-		if crate::CONFIG.get().is_some() {
-			panic!("FATAL: Tried to overwrite an already initialiated Config::global()");
 		}
-
-		crate::CONFIG.set(self).unwrap();
-		Ok(Config::global())
 	}
 
 	/// Reads the config file and returns the Config struct
 	/// Returns None if config is empty, invalid JSON or does not exist
-	pub fn read() -> Option<&'static Self> {
+	pub fn read() -> Option<Self> {
 		let config_file = io::config_file();
 
 		// If file doesn't exist then return None
@@ -93,8 +69,7 @@ impl Config {
 		// If we have a config and we can read and parse it, return it
 		if let Ok(contents) = std::fs::read_to_string(config_file) {
 			if let Ok(json) = serde_json::from_str(&contents) {
-				let config: Config = json;
-				return Some(config.set_global().unwrap());
+				return Some(json);
 			}
 		}
 
