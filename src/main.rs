@@ -24,10 +24,10 @@ async fn main() {
 		)
 		.subcommand(
 			App::new("add").about("Creates a new blog post").arg(
-				Arg::new("file")
+				Arg::new("name")
 					.index(1)
 					.required(true)
-					.about("The file name of the blog post"),
+					.about("The name of the blog post"),
 			),
 		)
 		.get_matches();

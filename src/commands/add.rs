@@ -1,9 +1,8 @@
-use crate::lib::conf::Config;
+use crate::lib::io::{data_dir, Dir};
 use anyhow::Result;
 
 pub fn add(args: &clap::ArgMatches) -> Result<()> {
-	let config = Config::read();
-	println!("{:?}", config);
-	println!("Adding file: {}", args.value_of("file").unwrap());
+	let mut _path = data_dir(Dir::Posts);
+	println!("Adding file: {}", args.value_of("name").unwrap());
 	Ok(())
 }

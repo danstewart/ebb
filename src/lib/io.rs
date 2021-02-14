@@ -9,12 +9,31 @@ use std::path;
 // File names
 const WRAPPER_FILE: &str = "wrapper.html";
 
-/// Returns the app data dir
+// The different data dir sub directories
+pub enum Dir {
+	Root,  // The root of our data dir (eg. ~/.local/share/ebb/)
+	Posts, // Where the raw (markdown) posts go (eg. /posts)
+	Built, // Where the built (html) posts go (eg. /built)
+}
+
+impl std::string::ToString for Dir {
+	fn to_string(&self) -> String {
+		match self {
+			Self::Root => String::from(""),
+			Self::Posts => String::from("posts"),
+			Self::Built => String::from("built"),
+		}
+	}
+}
+
+/// Returns the PathBuf for the specified data dir
 /// Panics if unable to detect data dir
 /// https://docs.rs/dirs/3.0.1/dirs/fn.data_dir.html
-pub fn data_dir() -> path::PathBuf {
+pub fn data_dir(dir_type: Dir) -> path::PathBuf {
 	if let Some(mut data_dir) = dirs::data_dir() {
 		data_dir.push("ebb");
+		data_dir.push(dir_type.to_string());
+
 		return data_dir;
 	}
 
@@ -36,9 +55,6 @@ pub fn config_file() -> path::PathBuf {
 
 /// Writes the default wrapper.html file to the app data dir
 pub fn make_wrapper() -> Result<()> {
-	let data_dir = data_dir();
-	std::fs::create_dir_all(&data_dir)?;
-
 	// Load the config
 	let config = Config::read().ok_or(anyhow!("No config found when building wrapper file"))?;
 
@@ -60,19 +76,30 @@ pub fn make_wrapper() -> Result<()> {
 	}
 
 	// Write formatted template to disk
-	let mut wrapper_file = data_dir;
+	let mut wrapper_file = data_dir(Dir::Root);
 	wrapper_file.push(WRAPPER_FILE);
+	write_file(wrapper_file, wrapper)?;
 
-	let mut file = std::fs::File::create(&wrapper_file)?;
-	file.write_all(wrapper.as_bytes())
-		.with_context(|| format!("Failed to write wrapper.html to {}", wrapper_file.display()))?;
+	Ok(())
+}
+
+/// Write string to a file
+pub fn write_file(path: path::PathBuf, contents: String) -> Result<()> {
+	// Create the directory structure
+	if let Some(parent_dir) = &path.parent() {
+		std::fs::create_dir_all(parent_dir)?;
+	}
+
+	let mut file = std::fs::File::create(&path)?;
+	file.write_all(contents.as_bytes())
+		.with_context(|| format!("Failed to write to {}", path.display()))?;
 
 	Ok(())
 }
 
 /// Return path of wrapper file
 pub fn wrapper_file() -> path::PathBuf {
-	let mut path = data_dir();
+	let mut path = data_dir(Dir::Root);
 	path.push(WRAPPER_FILE);
 	path
 }
