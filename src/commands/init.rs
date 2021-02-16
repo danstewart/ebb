@@ -5,7 +5,8 @@ use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::prompt;
 use crate::lib::prompt::PromptError::ValidateError;
-use anyhow::{anyhow, Context, Result};
+use crate::lib::run;
+use anyhow::{anyhow, Result};
 use std::str::FromStr;
 
 // Initial setup and configuration
@@ -17,17 +18,7 @@ pub async fn init(args: &clap::ArgMatches) -> Result<()> {
 	make_wrapper()?;
 
 	// Open their selected editor to edit the wrapper
-	std::process::Command::new(&config.editor)
-		.args(&[io::wrapper_file()])
-		.spawn()
-		.with_context(|| {
-			format!(
-				"Failed to run '{} {}'",
-				&config.editor,
-				io::wrapper_file().display()
-			)
-		})?
-		.wait()?;
+	run::editor(config.editor, io::wrapper_file())?;
 
 	let s3 = S3::new();
 	println!("Backend init ok? {}", s3.init().await.is_ok());
