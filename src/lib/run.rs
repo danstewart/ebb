@@ -1,5 +1,5 @@
-use std::path;
 use anyhow::{Context, Result};
+use std::path;
 
 /// Collection of functions that start other applications
 pub fn editor(editor: String, file: path::PathBuf) -> Result<()> {

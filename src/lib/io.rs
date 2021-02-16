@@ -85,16 +85,20 @@ pub fn make_wrapper() -> Result<()> {
 
 /// Write string to a file
 pub fn write_file(path: path::PathBuf, contents: String) -> Result<()> {
-	// Create the directory structure
-	if let Some(parent_dir) = &path.parent() {
-		std::fs::create_dir_all(parent_dir)?;
-	}
-
-	let mut file = std::fs::File::create(&path)?;
+	let mut file = touch(&path)?;
 	file.write_all(contents.as_bytes())
 		.with_context(|| format!("Failed to write to {}", path.display()))?;
 
 	Ok(())
+}
+
+/// Create an empty file and it's directory structure
+pub fn touch(path: &path::PathBuf) -> Result<std::fs::File> {
+	if let Some(parent_dir) = &path.parent() {
+		std::fs::create_dir_all(parent_dir)?;
+	}
+
+	Ok(std::fs::File::create(path)?)
 }
 
 /// Return path of wrapper file
