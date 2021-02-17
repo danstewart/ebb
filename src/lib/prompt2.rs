@@ -14,6 +14,7 @@ let res = p.next().unwrap().ask();
 println!("{:?}", res);
 */
 
+// Error types for this module
 #[derive(Error, Debug)]
 pub enum PromptError {
 	#[error("{0}")]
@@ -42,31 +43,40 @@ fn chomp(s: &mut String) -> String {
 	chomped
 }
 
-// An instance based approach to the above methods for fancier use cases
 pub struct Question {
 	question: String,
 	choices: Option<Vec<String>>,
 	default: Option<String>,
+	validator: Option<Box<dyn Fn(String) -> Result<String, PromptError>>>,
 }
 
 impl Question {
-	pub fn new(question: String) -> Question {
+	pub fn new(question: String) -> Self {
 		Question {
 			question: question,
 			choices: None,
 			default: None,
+			validator: None,
 		}
 	}
 
 	/// Set the default value
-	pub fn default(mut self, default: String) -> Question {
+	pub fn default(mut self, default: String) -> Self {
 		self.default = Some(default);
 		self
 	}
 
 	/// Set the choices
-	pub fn choices(mut self, choices: Vec<String>) -> Question {
+	pub fn choices(mut self, choices: Vec<String>) -> Self {
 		self.choices = Some(choices);
+		self
+	}
+
+	pub fn validation(
+		mut self,
+		func: impl Fn(String) -> Result<String, PromptError> + 'static,
+	) -> Self {
+		self.validator = Some(Box::new(func));
 		self
 	}
 
@@ -99,11 +109,11 @@ impl Question {
 
 	/// Ask question and validate input
 	/// Loop on validation failure
-	pub fn validate<F, T>(&self, func: F) -> Result<T, PromptError>
+	pub fn validate<F>(&self, func: F) -> Result<String, PromptError>
 	where
-		F: Fn(String) -> Result<T, PromptError>,
+		F: Fn(String) -> Result<String, PromptError>,
 	{
-		let mut answer: Option<T> = None;
+		let mut answer: Option<String> = None;
 		let mut success = false;
 
 		while !success {
