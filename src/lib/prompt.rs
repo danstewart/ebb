@@ -83,12 +83,10 @@ where
 }
 
 // An instance based approach to the above methods for fancier use cases
-#[allow(dead_code)]
 pub struct Prompt {
 	default: Option<String>,
 }
 
-#[allow(dead_code)]
 impl Prompt {
 	pub fn new() -> Prompt {
 		Prompt { default: None }

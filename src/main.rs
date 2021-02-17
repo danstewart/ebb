@@ -23,12 +23,14 @@ async fn main() {
 			),
 		)
 		.subcommand(
-			App::new("add").about("Creates a new blog post").arg(
-				Arg::new("name")
-					.index(1)
-					.required(true)
-					.about("The name of the blog post"),
-			),
+			App::new("add")
+				.about("Creates a new blog post")
+				.arg(Arg::new("name").index(1).about("The name of the blog post")),
+		)
+		.subcommand(
+			App::new("build")
+				.about("Builds a post into html")
+				.arg(Arg::new("name").index(1).about("The post name to build")),
 		)
 		.get_matches();
 
