@@ -2,6 +2,7 @@ use crate::lib::conf::Config;
 use crate::lib::io::{data_dir, Dir};
 use crate::lib::run;
 use anyhow::{anyhow, Result};
+use regex::Regex;
 
 // Add a new blog post file
 pub fn add(args: &clap::ArgMatches) -> Result<()> {
@@ -10,9 +11,11 @@ pub fn add(args: &clap::ArgMatches) -> Result<()> {
 		None => return Err(anyhow!("Name is required")),
 	};
 
-	// TODO: More validation
-	if name.contains("/") {
-		return Err(anyhow!("Post name must not contain '/'"));
+	// Validate name format
+	let rule = r"^[\w\d\-_\.]+$";
+	let re = Regex::new(rule)?;
+	if !re.is_match(name) {
+		return Err(anyhow!("Post name must only contain letters, numbers, '-', '_' and '.'"));
 	}
 
 	let mut path = data_dir(Dir::Posts);
@@ -25,6 +28,5 @@ pub fn add(args: &clap::ArgMatches) -> Result<()> {
 	};
 
 	run::editor(editor, path)?;
-
 	Ok(())
 }
