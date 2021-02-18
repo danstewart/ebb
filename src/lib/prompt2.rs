@@ -1,17 +1,35 @@
+use std::collections::LinkedList;
 use std::io::{stdin, stdout, Write};
 use thiserror::Error;
 
 // WORK IN PROGRESS
+// TODO:
+// * Add a PromptConfig struct (sets things like require non-blank, ignore case, etc...)
+// * Add PromptList.all() method
 
 /*
-// Example
-let p = Prompt::new().add(
-	Question::new("What is your name?".into())
-		.choices([ "Dan".into(), "Other".into() ].to_vec())
-);
+// Builder pattern:
+let prompt_list = PromptList::new()
+	.add(
+		Prompt::new("What is your name?")
+			.validate(|input: String| {
+				if input.len() > 0 {
+					return Ok(input);
+				}
+				return Err(PromptError::ValidateError(
+					String::from("Cannot be blank")
+				))
+			})
+	)
+	.add(
+		Prompt::new("Yes or no?")
+			.choices([ "y", "Y", "n", "N" ].to_vec())
+	)
 
-let res = p.next().unwrap().ask();
-println!("{:?}", res);
+let res = prompt_list.next().ask();
+
+// Direct method
+let res = Prompt::new("How is it going?").ask();
 */
 
 // Error types for this module
@@ -43,17 +61,18 @@ fn chomp(s: &mut String) -> String {
 	chomped
 }
 
-pub struct Question {
+/// Structure containing all details of a prompt
+pub struct Prompt {
 	question: String,
 	choices: Option<Vec<String>>,
 	default: Option<String>,
 	validator: Option<Box<dyn Fn(String) -> Result<String, PromptError>>>,
 }
 
-impl Question {
-	pub fn new(question: String) -> Self {
-		Question {
-			question: question,
+impl Prompt {
+	pub fn new(question: &str) -> Self {
+		Prompt {
+			question: String::from(question),
 			choices: None,
 			default: None,
 			validator: None,
@@ -61,18 +80,20 @@ impl Question {
 	}
 
 	/// Set the default value
-	pub fn default(mut self, default: String) -> Self {
-		self.default = Some(default);
+	pub fn default(mut self, default: &str) -> Self {
+		self.default = Some(String::from(default));
 		self
 	}
 
 	/// Set the choices
-	pub fn choices(mut self, choices: Vec<String>) -> Self {
-		self.choices = Some(choices);
+	pub fn choices(mut self, choices: Vec<&str>) -> Self {
+		let mapped: Vec<String> = choices.iter().map(|&i| String::from(i)).collect();
+		self.choices = Some(mapped);
 		self
 	}
 
-	pub fn validation(
+	/// Set the validation for this prompt
+	pub fn validate(
 		mut self,
 		func: impl Fn(String) -> Result<String, PromptError> + 'static,
 	) -> Self {
@@ -82,9 +103,14 @@ impl Question {
 
 	/// Ask the question
 	pub fn ask(&self) -> Result<String, PromptError> {
+		// If we have a custom validator then pass to the validate_loop()
+		if let Some(validator) = &self.validator {
+			return self.validate_loop(validator);
+		}
+
 		// If we have preset choices then call validate()
 		if let Some(choices) = &self.choices {
-			return self.validate(|input: String| {
+			return self.validate_loop(|input: String| {
 				let err_msg = format!("Valid options are: {}", choices.join(", "));
 				match choices.iter().any(|i| i == &input) {
 					true => Ok(input),
@@ -109,7 +135,7 @@ impl Question {
 
 	/// Ask question and validate input
 	/// Loop on validation failure
-	pub fn validate<F>(&self, func: F) -> Result<String, PromptError>
+	fn validate_loop<F>(&self, func: F) -> Result<String, PromptError>
 	where
 		F: Fn(String) -> Result<String, PromptError>,
 	{
@@ -152,37 +178,39 @@ impl Question {
 	/// Displaying the default and options
 	fn format(&self) -> String {
 		let mut our_question = String::from(&self.question);
+		let line_end = chomp(&mut our_question);
+		our_question = String::from(our_question.trim());
 
 		// If we have a default value then rejig the question to show that
-		// TODO: Show choices
 		if let Some(default) = &self.default {
-			let chomped = chomp(&mut our_question);
-			our_question = format!("{} [{}]{} ", &self.question, default, chomped);
+			our_question = format!("{} [{}]", our_question, default);
+		} else if let Some(choices) = &self.choices {
+			our_question = format!("{} [{}]", our_question, choices.join(", "));
 		}
 
-		our_question
+		format!("{}{} ", our_question, line_end)
 	}
 }
 
-pub struct Prompt {
-	questions: Vec<Question>,
+/// Structure containing a queue of prompts
+pub struct PromptList {
+	questions: LinkedList<Prompt>,
 }
 
-impl Prompt {
-	pub fn new() -> Prompt {
-		Prompt {
-			questions: Vec::new(),
+impl PromptList {
+	pub fn new() -> PromptList {
+		PromptList {
+			questions: LinkedList::new(),
 		}
 	}
 
 	/// Adds a question to this prompt
-	pub fn add(mut self, question: Question) -> Prompt {
-		self.questions.push(question);
+	pub fn add(mut self, prompt: Prompt) -> Self {
+		self.questions.push_back(prompt);
 		self
 	}
 
-	// TODO: Change to FIFO
-	pub fn next(mut self) -> Option<Question> {
-		self.questions.pop()
+	pub fn next(&mut self) -> Option<Prompt> {
+		self.questions.pop_front()
 	}
 }
