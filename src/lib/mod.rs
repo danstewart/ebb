@@ -4,6 +4,3 @@ pub mod run;
 
 #[allow(dead_code)]
 pub mod prompt;
-
-#[allow(dead_code)]
-pub mod prompt2;
