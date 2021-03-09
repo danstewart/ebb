@@ -4,8 +4,8 @@ use crate::lib::conf;
 use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::run;
-use clinput::Prompt;
 use anyhow::{anyhow, Result};
+use clinput::Prompt;
 use std::str::FromStr;
 
 // Initial setup and configuration
