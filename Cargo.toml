@@ -20,3 +20,5 @@ async-trait = "0.1.42"
 tokio = "1.0.2"
 regex = "1"
 comrak = "0.9"
+clinput = "0.2.0"
+# clinput = { path = "../clinput" }

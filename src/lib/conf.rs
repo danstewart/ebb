@@ -10,6 +10,9 @@ use std::io::prelude::*;
 // it's needed at some point.
 // New strategy is to just re-read the config each time.
 
+// A list of all valid backends
+pub const BACKENDS: &'static [&'static str; 2] = &["s3", "do"];
+
 /// The supported storage backends
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Backend {
@@ -22,7 +25,7 @@ impl std::str::FromStr for Backend {
 	type Err = String;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		match s {
+		match s.to_uppercase().as_str() {
 			"S3" => Ok(Backend::S3),
 			"DO" => Ok(Backend::DigitalOcean),
 			_ => Err(format!("'{}' is not a valid backend", s)),

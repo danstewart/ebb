@@ -3,9 +3,8 @@ use crate::backends::shared::Backend;
 use crate::lib::conf;
 use crate::lib::conf::Config;
 use crate::lib::io;
-use crate::lib::prompt;
-use crate::lib::prompt::PromptError::ValidateError;
 use crate::lib::run;
+use clinput::Prompt;
 use anyhow::{anyhow, Result};
 use std::str::FromStr;
 
@@ -35,19 +34,16 @@ fn make_config(force: bool) -> Result<Config> {
 	}
 
 	// Ask user for the details we need
-	let author = prompt::ask("What is your name? ")?;
-	let blog_name = prompt::ask("What is the name of your blog? ")?;
+	let author = Prompt::not_blank().ask("What is your name? ")?;
+	let blog_name = Prompt::not_blank().ask("What is the name of your blog? ")?;
 
-	let backend: conf::Backend = prompt::validate(
-		"Which backend would you like to use? [s3/do] ",
-		|ans: String| match conf::Backend::from_str(&ans.to_uppercase()[..]) {
-			Ok(val) => Ok(val),
-			Err(_) => Err(ValidateError(String::from("Must be either S3 or DO"))),
-		},
-	)?;
+	let backend = Prompt::new()
+		.choices(conf::BACKENDS.to_vec())
+		.ask("Which backend would you like to use? ")?;
+	let backend = conf::Backend::from_str(backend.as_str()).unwrap();
 
 	// TODO: Check $EDITOR env var
-	let editor = prompt::ask("What is the command for your preferred editor? ")?;
+	let editor = Prompt::not_blank().ask("What is the command for your preferred editor? ")?;
 
 	let config = Config::new(author, blog_name, backend, editor);
 	config.write()?;
