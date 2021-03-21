@@ -1,9 +1,4 @@
-use crate::backend::{
-	BackendType,
-	Backend,
-	VALID_BACKENDS,
-	s3::S3,
-};
+use crate::backend::{s3::S3, Backend, BackendType, VALID_BACKENDS};
 use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::run;

@@ -2,8 +2,8 @@ use crate::lib::conf::Config;
 use crate::lib::io::{data_dir, Dir};
 use crate::lib::run;
 use anyhow::{anyhow, Result};
-use regex::Regex;
 use clinput::Prompt;
+use regex::Regex;
 
 // Add a new blog post file
 pub fn add(args: &clap::ArgMatches) -> Result<()> {

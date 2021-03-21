@@ -1,8 +1,8 @@
 #![warn(clippy::all)]
 
 mod backend;
-mod format;
 mod command;
+mod format;
 mod lib;
 
 use anyhow::{anyhow, Result};

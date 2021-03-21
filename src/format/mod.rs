@@ -36,4 +36,3 @@ pub trait Format {
 	/// Convert to HTML and surround with wrapper.html
 	async fn build(&self) -> Result<()>;
 }
-

@@ -1,11 +1,11 @@
+use crate::backend::BackendType;
+use crate::format::FormatType;
 use crate::lib::io;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use crate::backend::BackendType;
-use crate::format::FormatType;
 
 // NOTE: This used to be a singleton using the OnceCell lib
 // It turned out to be overly clunky but noting here in case
