@@ -1,6 +1,9 @@
-use crate::backends::s3::S3;
-use crate::backends::shared::Backend;
-use crate::lib::conf;
+use crate::backend::{
+	BackendType,
+	Backend,
+	VALID_BACKENDS,
+	s3::S3,
+};
 use crate::lib::conf::Config;
 use crate::lib::io;
 use crate::lib::run;
@@ -38,9 +41,9 @@ fn make_config(force: bool) -> Result<Config> {
 	let blog_name = Prompt::not_blank().ask("What is the name of your blog? ")?;
 
 	let backend = Prompt::new()
-		.choices(conf::BACKENDS.to_vec())
+		.choices(VALID_BACKENDS.to_vec())
 		.ask("Which backend would you like to use? ")?;
-	let backend = conf::Backend::from_str(backend.as_str()).unwrap();
+	let backend = BackendType::from_str(backend.as_str()).unwrap();
 
 	// TODO: Check $EDITOR env var
 	let editor = Prompt::not_blank().ask("What is the command for your preferred editor? ")?;

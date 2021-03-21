@@ -1,12 +1,13 @@
 #![warn(clippy::all)]
 
-mod backends;
-mod commands;
+mod backend;
+mod format;
+mod command;
 mod lib;
 
 use anyhow::{anyhow, Result};
 use clap::{App, Arg};
-use commands::{add, init};
+use command::{add, init};
 use tokio;
 
 #[tokio::main]
@@ -26,11 +27,6 @@ async fn main() {
 			App::new("add")
 				.about("Creates a new blog post")
 				.arg(Arg::new("name").index(1).about("The name of the blog post")),
-		)
-		.subcommand(
-			App::new("build")
-				.about("Builds a post into html")
-				.arg(Arg::new("name").index(1).about("The post name to build")),
 		)
 		.get_matches();
 

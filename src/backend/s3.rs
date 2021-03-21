@@ -1,4 +1,4 @@
-use super::shared::Backend;
+use super::Backend;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use rusoto_core;

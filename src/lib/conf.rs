@@ -4,41 +4,21 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
+use crate::backend::BackendType;
+use crate::format::FormatType;
 
 // NOTE: This used to be a singleton using the OnceCell lib
 // It turned out to be overly clunky but noting here in case
 // it's needed at some point.
 // New strategy is to just re-read the config each time.
 
-// A list of all valid backends
-pub const BACKENDS: &'static [&'static str; 2] = &["s3", "do"];
-
-/// The supported storage backends
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Backend {
-	S3,
-	DigitalOcean,
-}
-
-/// FromStr mapping for Backend enum
-impl std::str::FromStr for Backend {
-	type Err = String;
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		match s.to_uppercase().as_str() {
-			"S3" => Ok(Backend::S3),
-			"DO" => Ok(Backend::DigitalOcean),
-			_ => Err(format!("'{}' is not a valid backend", s)),
-		}
-	}
-}
-
 /// Config struct
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
 	pub author: String,
 	pub blog_name: String,
-	pub backend: Backend,
+	pub backend: BackendType,
+	pub format: FormatType,
 	pub editor: String,
 }
 
@@ -50,11 +30,12 @@ fn exists() -> bool {
 /// Instance of config
 impl Config {
 	/// Create new config instance
-	pub fn new(author: String, blog_name: String, backend: Backend, editor: String) -> Self {
+	pub fn new(author: String, blog_name: String, backend: BackendType, editor: String) -> Self {
 		Config {
 			author,
 			blog_name,
 			backend,
+			format: FormatType::MD,
 			editor,
 		}
 	}
